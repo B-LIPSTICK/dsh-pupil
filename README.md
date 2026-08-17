@@ -223,7 +223,7 @@ dsh-pupil/
 ## 路线图
 
 - [ ] Logo 与品牌视觉（配好画图 Key 后生成）
-- [x] npm 发布 0.4.0（npm 最新：0.4.0）
+- [x] npm 发布（npm 最新：0.4.1）
 - [ ] 更多视觉后端预设（Gemini、本地 vLLM）
 - [ ] 本地 OCR（tesseract）优先
 - [ ] 图片缩放预处理（大图自动压缩省 token）
