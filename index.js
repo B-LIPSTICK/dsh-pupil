@@ -19,6 +19,7 @@ import {
   replaceImagesSync,
   messagesHaveImage,
   collectImageBlocks,
+  collectAttachmentRefs,
   instantDescribeBlocks,
   attachmentIdOf,
 } from "./bridge.js";
@@ -50,6 +51,41 @@ export function apply(ctx, config = {}) {
       return ctx.get("attachments", false);
     } catch {
       return undefined;
+    }
+  };
+
+  // ---------- 附件索引：attachmentId -> 完整 ImageAttachmentRef ----------
+  // 附件存储读取时会校验引用元数据（mediaType/bytes/width/height）与文件一致性，
+  // 只传 id 会抛 ATTACHMENT_CORRUPT。模型按标记里的 id 调工具时，需要完整的引用，
+  // 因此从会话事件日志（user/message、assistant/message、tool/result）增量收集。
+  const attachmentIndex = new Map();
+  let attachmentIndexCursor = 0;
+  const indexAttachmentRef = (ref) => {
+    const id = ref?.attachmentId ?? ref?.id;
+    if (typeof id !== "string" || id === "") return;
+    if (typeof ref?.mediaType !== "string" || typeof ref?.bytes !== "number") return;
+    if (attachmentIndex.size >= 500) attachmentIndex.clear();
+    attachmentIndex.set(id, ref);
+  };
+  const indexSessionAttachments = (session) => {
+    if (!cfg.indexEventLog) return;
+    const events = session?.events;
+    if (!Array.isArray(events)) return;
+    const start = Math.max(0, attachmentIndexCursor);
+    attachmentIndexCursor = events.length;
+    for (let i = start; i < events.length; i++) {
+      const ev = events[i];
+      const data = ev?.data;
+      if (!data) continue;
+      if (ev.type === "user/message") {
+        for (const ref of collectAttachmentRefs([data])) indexAttachmentRef(ref);
+      } else if (ev.type === "assistant/message" || ev.type === "tool/result") {
+        for (const ref of collectAttachmentRefs([data?.message])) indexAttachmentRef(ref);
+      } else if (ev.type === "agent/inbox/spliced") {
+        for (const m of data.inserted ?? []) {
+          for (const ref of collectAttachmentRefs([m])) indexAttachmentRef(ref);
+        }
+      }
     }
   };
 
@@ -110,8 +146,11 @@ export function apply(ctx, config = {}) {
       }
       if (!decision || decision.kind === "reject") return decision;
       try {
+        // 1) 从会话事件日志索引附件（含历史：重启后首轮即重建）
+        indexSessionAttachments(payload.agent?.session);
         const messages = decision.messages ?? payload.messages ?? [];
         if (!messagesHaveImage(messages)) return decision;
+        // 2) 图片轮预识别
         if (cfg.instantDescribe && cfg.memoryEnabled) {
           const blocks = collectImageBlocks(messages);
           const fresh = blocks.filter((b) => {
@@ -129,8 +168,9 @@ export function apply(ctx, config = {}) {
             for (const [id, text] of map) remember(id, text);
           }
         }
-      } catch {
+      } catch (error) {
         // 预识别失败静默：llm/stream 会用附件标记兜底，模型可调用工具看图
+        ctx.logger?.warn?.(`dsh-pupil: image-turn pre-describe skipped: ${error?.message ?? error}`);
       }
       return decision;
     });
@@ -163,7 +203,15 @@ export function apply(ctx, config = {}) {
       for (const id of rawIds) {
         const s = String(id ?? "").trim();
         if (s === "") continue;
-        images.push(await readAttachmentImage(attachments, s, signal));
+        // 需要完整引用（附件存储校验 mediaType/bytes/width/height），从会话事件索引取
+        const ref = attachmentIndex.get(s);
+        if (!ref) {
+          throw new Error(
+            `未找到附件 ${s} 的元数据（该图可能上传于插件加载前或存储不可用）。` +
+              `可尝试：1) 让用户重新上传图片；2) 改用 image_source 传本地路径或 URL。`
+          );
+        }
+        images.push(await readAttachmentImage(attachments, ref, signal));
         ids.push(s);
       }
     }
