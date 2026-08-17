@@ -2,7 +2,7 @@
 
 **简体中文** | [English](README.en.md)
 
-<!-- 🎨 Logo 占位：配好画图 Key 后生成 -->
+<p align="center"><img src="assets/logo.png" width="140" alt="dsh-pupil logo"></p>
 
 # 👁️ dsh-pupil
 
@@ -222,7 +222,7 @@ dsh-pupil/
 
 ## 路线图
 
-- [ ] Logo 与品牌视觉（配好画图 Key 后生成）
+- [x] Logo 与品牌视觉（assets/logo.png，gpt-image-2 生成）
 - [x] npm 发布（npm 最新：0.4.2）
 - [ ] 更多视觉后端预设（Gemini、本地 vLLM）
 - [ ] 本地 OCR（tesseract）优先

@@ -2,7 +2,7 @@
 
 **English** | [简体中文](README.md)
 
-<!-- 🎨 Logo placeholder: to be generated once a generation API key is configured -->
+<p align="center"><img src="assets/logo.png" width="140" alt="dsh-pupil logo"></p>
 
 # 👁️ dsh-pupil
 
@@ -207,7 +207,7 @@ dsh-pupil/
 
 ## Roadmap
 
-- [ ] Logo & brand visuals (once a generation API key is configured)
+- [x] Logo & brand visuals (assets/logo.png, generated with gpt-image-2)
 - [x] npm release (npm latest: 0.4.2)
 - [ ] More vision backend presets (Gemini, local vLLM)
 - [ ] Local OCR (tesseract) first
