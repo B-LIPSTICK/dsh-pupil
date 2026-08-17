@@ -405,24 +405,34 @@ export function apply(ctx, config = {}) {
       },
       async execute(args, exec) {
         const img = await generateImage(cfg, String(args.prompt ?? ""), args.size, exec.signal);
+        // 1) 发布为会话附件（模型侧可见；GUI 工具卡暂不渲染图片块，保留供未来兼容）
+        let ref;
         const attachments = attachmentsService();
         if (attachments && typeof attachments.saveImage === "function") {
           try {
-            const ref = await attachments.saveImage({
+            ref = await attachments.saveImage({
               data: img.bytes,
               mediaType: img.mediaType,
               name: `dsh-pupil-${Date.now()}`,
             });
-            return {
-              text: `图片已生成（${img.mediaType}，${img.bytes.length} 字节），已在对话中展示。`,
-              image: ref,
-            };
           } catch {
-            /* 附件服务失败 → 落盘 */
+            /* 附件服务失败 → 仅落盘 */
           }
         }
-        const file = await saveImageToDisk(img.bytes, img.ext);
-        return { text: `图片已生成并保存到：${file}`, path: file };
+        // 2) 同时落盘一份，返回真实文件路径（用户可直接打开；GUI 工具卡只显示文本）
+        let file;
+        try {
+          file = await saveImageToDisk(img.bytes, img.ext);
+        } catch {
+          file = undefined;
+        }
+        const parts = [`图片已生成（${img.mediaType}，${img.bytes.length} 字节）`];
+        if (file) parts.push(`，文件已保存到：${file}`);
+        else if (ref) parts.push("，已作为会话附件保存");
+        const result = { text: parts.join("") + "。" };
+        if (ref) result.image = ref;
+        if (file) result.path = file;
+        return result;
       },
     })
   );
