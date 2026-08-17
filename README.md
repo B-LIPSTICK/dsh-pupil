@@ -132,7 +132,7 @@ dsh-pupil 从根上消除这个循环：
 
 ## 配置
 
-优先级：**插件配置 > 环境变量 > `~/.dsh-eye.json` > Windows 用户注册表 > 预设 > 内置默认**。
+优先级：**插件配置 > `~/.dsh-eye.json` / Windows 用户注册表（每次请求实时读取）> 环境变量 > 预设 > 内置默认**。
 
 | 变量 | 用途 | 默认 |
 |---|---|---|
@@ -222,7 +222,7 @@ dsh-pupil/
 
 ## 路线图
 
-- [x] Logo 与品牌视觉（assets/logo.png，gpt-image-2 生成）
+- [x] Logo 与品牌视觉（assets/logo.png）
 - [x] npm 发布（npm 最新：0.4.2）
 - [ ] 更多视觉后端预设（Gemini、本地 vLLM）
 - [ ] 本地 OCR（tesseract）优先

@@ -117,7 +117,7 @@ draw a cyberpunk cat           → generates an image, shown inline
 
 ## Configuration
 
-Priority: **plugin config > environment variables > `~/.dsh-eye.json` > Windows user registry > preset > built-in default**.
+Priority: **plugin config > `~/.dsh-eye.json` / Windows user registry (re-read on every request) > environment variables > preset > built-in default**.
 
 | Variable | Purpose | Default |
 |---|---|---|
@@ -207,7 +207,7 @@ dsh-pupil/
 
 ## Roadmap
 
-- [x] Logo & brand visuals (assets/logo.png, generated with gpt-image-2)
+- [x] Logo & brand visuals (assets/logo.png)
 - [x] npm release (npm latest: 0.4.2)
 - [ ] More vision backend presets (Gemini, local vLLM)
 - [ ] Local OCR (tesseract) first
