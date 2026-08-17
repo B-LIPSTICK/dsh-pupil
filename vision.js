@@ -1,4 +1,4 @@
-// dsh-pupil · 视觉模型调用与图片源解析
+// dsh-eye · 视觉模型调用与图片源解析
 // 支持：本地路径 / http(s) URL / data URI / 会话附件引用（attachmentId）。
 // 任何失败都抛出带可读中文信息的 Error，由调用方决定降级策略。
 import { readFile } from "node:fs/promises";
@@ -21,7 +21,7 @@ function assertWithinLimit(base64Length, label) {
   if (base64Length > MAX_IMAGE_BYTES * 1.34 + 64) {
     const approxMB = Math.round((base64Length / 1.34 / 1024 / 1024) * 10) / 10;
     throw new Error(
-      `dsh-pupil: ${label} 体积过大（约 ${approxMB}MB），超过 ${Math.round(MAX_IMAGE_BYTES / 1024 / 1024)}MB 上限。` +
+      `dsh-eye: ${label} 体积过大（约 ${approxMB}MB），超过 ${Math.round(MAX_IMAGE_BYTES / 1024 / 1024)}MB 上限。` +
         `请先用图片工具缩小尺寸或压缩后再试。`
     );
   }
@@ -33,7 +33,7 @@ function assertWithinLimit(base64Length, label) {
  */
 export async function resolveImageSource(source) {
   if (typeof source !== "string" || source === "") {
-    throw new Error("dsh-pupil: 图片来源为空");
+    throw new Error("dsh-eye: 图片来源为空");
   }
   if (source.startsWith("data:")) {
     const comma = source.indexOf(",");
@@ -84,12 +84,12 @@ function readableApiError(body) {
 export async function callVisionModel(config, prompt, images, signal) {
   if (!config.apiKey) {
     throw new Error(
-      `dsh-pupil: 未配置视觉 API Key。已检查：插件配置、环境变量、~/.dsh-eye.json、用户注册表，均未找到。` +
+      `dsh-eye: 未配置视觉 API Key。已检查：插件配置、环境变量、~/.dsh-eye.json、用户注册表，均未找到。` +
         `请运行 install.cmd（或 setup.ps1）完成配置后重试。`
     );
   }
   const baseUrl = String(config.baseUrl ?? "").replace(/\/+$/, "");
-  if (!baseUrl) throw new Error("dsh-pupil: 未配置视觉 API 地址（DASHEYE_BASE_URL）");
+  if (!baseUrl) throw new Error("dsh-eye: 未配置视觉 API 地址（DASHEYE_BASE_URL）");
   const timeout = AbortSignal.timeout(config.timeoutMs || 120_000);
   const combined = signal ? AbortSignal.any([signal, timeout]) : timeout;
   const list = Array.isArray(images) ? images : [images];

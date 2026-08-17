@@ -1,4 +1,4 @@
-// dsh-pupil · 配置解析
+// dsh-eye · 配置解析
 // 优先级：插件配置（cordis.patch.yml / 设置页）> 环境变量 > ~/.dsh-eye.json
 //         > Windows 用户注册表 > 预设 > 内置默认。
 // 兼容 dsh-eye 技能脚本的配置文件：插件与脚本共用同一份用户配置。
@@ -84,7 +84,7 @@ function queryRegistryText() {
     /* 受限环境走方式 2 */
   }
   try {
-    const tmp = join(tmpdir(), `dsh-pupil-reg-${process.pid}.txt`);
+    const tmp = join(tmpdir(), `dsh-eye-reg-${process.pid}.txt`);
     const r = spawnSync("cmd.exe", ["/d", "/s", "/c", `reg query HKCU\\Environment > "${tmp}" 2>&1`], {
       stdio: "ignore",
       windowsHide: true,

@@ -1,4 +1,4 @@
-// dsh-pupil · 提示词与系统提示段落
+// dsh-eye · 提示词与系统提示段落
 
 export const DESCRIBE_PROMPT = `请详细描述这张图片的内容。要求：
 1. 整体场景与主题
@@ -15,9 +15,9 @@ export const BRIDGE_PROMPT = `请用中文简要描述这张图片，供纯文�
 /** 注入系统提示：模型何时、如何用视觉工具。 */
 export function systemPromptSection() {
   return [
-    "## 视觉与绘图能力 (dsh-pupil)",
+    "## 视觉与绘图能力 (dsh-eye)",
     "",
-    "你通过 dsh-pupil 插件获得了以下工具：",
+    "你通过 dsh-eye 插件获得了以下工具：",
     "- `vision_describe` — 描述图片内容（支持本地路径/URL/data URI，或会话中上传图片的 attachmentIds）",
     "- `vision_ask` — 针对图片回答具体问题",
     "- `vision_ocr` — 提取图片中的文字",

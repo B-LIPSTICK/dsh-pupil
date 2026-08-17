@@ -1,6 +1,6 @@
 <div align="center">
 
-# dsh-pupil
+# dsh-eye
 
 > Eyes and drawing hands for text-only DeepSeek Harness agents
 
@@ -41,13 +41,13 @@ no more "model does not support images", no more failure-retry session lockups.
 
 ```sh
 npm pack
-dsh plugin --profile web add dsh-pupil-x.y.z.tgz
+dsh plugin --profile web add dsh-eye-x.y.z.tgz
 ```
 
 ### Uninstall
 
 ```sh
-dsh plugin --profile web remove dsh-pupil
+dsh plugin --profile web remove dsh-eye
 ```
 
 ## ⚙️ Configuration
@@ -63,7 +63,7 @@ Priority: **plugin config > environment variables > `~/.dsh-eye.json` > Windows 
 Fine-grained control via the profile's `cordis.patch.yml`:
 
 ```yaml
-- id: dsh-pupil
+- id: dsh-eye
   config:
     preset: glm
     apiKey: !!js process.env.DASHEYE_API_KEY

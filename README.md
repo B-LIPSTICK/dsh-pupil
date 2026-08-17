@@ -1,6 +1,6 @@
 <div align="center">
 
-# dsh-pupil
+# dsh-eye
 
 > 给 DeepSeek Harness 的纯文本 Agent 装上一双眼睛 + 一双手
 
@@ -39,14 +39,14 @@
 ### 手动安装（可选）
 
 ```sh
-npm pack                          # 打包成 dsh-pupil-x.y.z.tgz
-dsh plugin --profile web add dsh-pupil-x.y.z.tgz
+npm pack                          # 打包成 dsh-eye-x.y.z.tgz
+dsh plugin --profile web add dsh-eye-x.y.z.tgz
 ```
 
 ### 卸载
 
 ```sh
-dsh plugin --profile web remove dsh-pupil
+dsh plugin --profile web remove dsh-eye
 ```
 
 ## ⚙️ 配置
@@ -62,7 +62,7 @@ dsh plugin --profile web remove dsh-pupil
 也可以通过 profile 的 `cordis.patch.yml` 精细配置：
 
 ```yaml
-- id: dsh-pupil
+- id: dsh-eye
   config:
     preset: glm
     apiKey: !!js process.env.DASHEYE_API_KEY

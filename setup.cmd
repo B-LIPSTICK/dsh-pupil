@@ -1,4 +1,4 @@
-# dsh-pupil · 配置向导 cmd 入口
+# dsh-eye · 配置向导 cmd 入口
 @echo off
 setlocal
 cd /d "%~dp0"

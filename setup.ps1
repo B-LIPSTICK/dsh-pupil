@@ -1,4 +1,4 @@
-﻿# dsh-pupil · 配置向导（可独立运行；install.ps1 安装完成后会自动调用）
+﻿# dsh-eye · 配置向导（可独立运行；install.ps1 安装完成后会自动调用）
 [CmdletBinding()]
 param(
   [switch]$DryRun          # 只预览，不写入
@@ -22,7 +22,7 @@ function Read-Key([string]$prompt) {
 
 Write-Host ""
 Write-Host "  ============================================" -ForegroundColor Cyan
-Write-Host "   dsh-pupil 配置向导" -ForegroundColor Cyan
+Write-Host "   dsh-eye 配置向导" -ForegroundColor Cyan
 Write-Host "  ============================================" -ForegroundColor Cyan
 Write-Host "   看图（vision）：描述 / 问答 / OCR + 粘贴图片自动识别" -ForegroundColor DarkGray
 Write-Host "   画图（generate）：文字生成图片" -ForegroundColor DarkGray

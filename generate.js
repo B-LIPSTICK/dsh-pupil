@@ -1,9 +1,9 @@
-// dsh-pupil · 画图：文字 → 图片（OpenAI 兼容 /images/generations）
+// dsh-eye · 画图：文字 → 图片（OpenAI 兼容 /images/generations）
 import { mkdir, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { tmpdir } from "node:os";
 
-const NAME = "dsh-pupil";
+const NAME = "dsh-eye";
 
 /** 根据魔数识别图片格式（不依赖扩展名）。 */
 export function sniffMediaType(bytes) {
@@ -72,17 +72,17 @@ export async function generateImage(config, prompt, size, signal) {
   return { bytes, ext, mediaType };
 }
 
-/** 默认输出目录：%DSH_HOME%/storages/dsh-pupil 或系统临时目录。 */
+/** 默认输出目录：%DSH_HOME%/storages/dsh-eye 或系统临时目录。 */
 export function defaultOutDir() {
-  if (process.env.DSH_HOME) return join(process.env.DSH_HOME, "storages", "dsh-pupil");
-  return join(tmpdir(), "dsh-pupil");
+  if (process.env.DSH_HOME) return join(process.env.DSH_HOME, "storages", "dsh-eye");
+  return join(tmpdir(), "dsh-eye");
 }
 
 /** 保存图片到磁盘，返回文件路径。 */
 export async function saveImageToDisk(bytes, ext, outDir) {
   const dir = resolve(outDir || defaultOutDir());
   await mkdir(dir, { recursive: true });
-  const file = join(dir, `dsh-pupil-${Date.now()}.${ext}`);
+  const file = join(dir, `dsh-eye-${Date.now()}.${ext}`);
   await writeFile(file, bytes);
   return file;
 }
