@@ -1,6 +1,6 @@
 <div align="center">
 
-# dsh-eye
+# dsh-pupil
 
 > 给 DeepSeek Harness 的纯文本 Agent 装上一双眼睛 + 一双手
 
@@ -34,24 +34,24 @@
 3. 配置向导里**只需填看图 API Key**，其余全部回车用**免费默认**（智谱 `glm-4v-flash` 看图 + `cogview-3-flash` 画图）。
 4. **重启 dsh web**，然后随便找个对话，直接粘贴图片即可。
 
-> 已有 dsh-eye 技能配置（`~/.dsh-eye.json`）？插件自动读取同一份配置，**无需重新填写**。
+> 已有 dsh-pupil 技能配置（`~/.dsh-pupil.json`）？插件自动读取同一份配置，**无需重新填写**。
 
 ### 手动安装（可选）
 
 ```sh
-npm pack                          # 打包成 dsh-eye-x.y.z.tgz
-dsh plugin --profile web add dsh-eye-x.y.z.tgz
+npm pack                          # 打包成 dsh-pupil-x.y.z.tgz
+dsh plugin --profile web add dsh-pupil-x.y.z.tgz
 ```
 
 ### 卸载
 
 ```sh
-dsh plugin --profile web remove dsh-eye
+dsh plugin --profile web remove dsh-pupil
 ```
 
 ## ⚙️ 配置
 
-优先级：**插件配置 > 环境变量 > `~/.dsh-eye.json` > Windows 用户注册表 > 预设 > 内置默认**。
+优先级：**插件配置 > 环境变量 > `~/.dsh-pupil.json` > Windows 用户注册表 > 预设 > 内置默认**。
 
 | 变量 | 用途 | 示例（默认） |
 |---|---|---|
@@ -62,7 +62,7 @@ dsh plugin --profile web remove dsh-eye
 也可以通过 profile 的 `cordis.patch.yml` 精细配置：
 
 ```yaml
-- id: dsh-eye
+- id: dsh-pupil
   config:
     preset: glm
     apiKey: !!js process.env.DASHEYE_API_KEY
@@ -108,7 +108,7 @@ dsh plugin --profile web remove dsh-eye
 - **粘贴图片后模型说看不到？** 升级到本版本后图片轮会自动预识别；如果预识别失败（如未配 Key），模型会收到带 `id=` 的附件标记，应当调用 `vision_describe(attachmentIds=["sha256:..."])` 看图。若模型没有调用工具，请检查 Key 配置（`setup.ps1`）后重试。
 - **没配视觉 Key 会怎样？** 不会卡死：图片轮降级为标记 + 工具看图；工具会提示你配置 Key。
 - **旧会话已经卡死（一直"运行中"）？** 点输入框旁的**停止**按钮；仍无效就**新开一个对话**（旧会话保持静止即可）。
-- **配置改了不生效？** 改 `~/.dsh-eye.json` 或环境变量后无需重启即可生效（每次请求实时读取）；改 `cordis.patch.yml` 需重启。
+- **配置改了不生效？** 改 `~/.dsh-pupil.json` 或环境变量后无需重启即可生效（每次请求实时读取）；改 `cordis.patch.yml` 需重启。
 - **想关掉预识别？** `cordis.patch.yml` 里 `instantDescribe: false`。
 
 ## 🧪 开发与测试

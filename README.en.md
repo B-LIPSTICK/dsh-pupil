@@ -1,6 +1,6 @@
 <div align="center">
 
-# dsh-eye
+# dsh-pupil
 
 > Eyes and drawing hands for text-only DeepSeek Harness agents
 
@@ -35,24 +35,24 @@ no more "model does not support images", no more failure-retry session lockups.
 3. In the wizard, **only the vision API key is required** — press Enter everywhere else for the free defaults (Zhipu `glm-4v-flash` vision + `cogview-3-flash` generation).
 4. **Restart `dsh web`**, open any chat, and paste an image.
 
-> Already configured dsh-eye (`~/.dsh-eye.json`)? The plugin reads the same file — nothing to re-enter.
+> Already configured dsh-pupil (`~/.dsh-pupil.json`)? The plugin reads the same file — nothing to re-enter.
 
 ### Manual install (optional)
 
 ```sh
 npm pack
-dsh plugin --profile web add dsh-eye-x.y.z.tgz
+dsh plugin --profile web add dsh-pupil-x.y.z.tgz
 ```
 
 ### Uninstall
 
 ```sh
-dsh plugin --profile web remove dsh-eye
+dsh plugin --profile web remove dsh-pupil
 ```
 
 ## ⚙️ Configuration
 
-Priority: **plugin config > environment variables > `~/.dsh-eye.json` > Windows user registry > preset > built-in default**.
+Priority: **plugin config > environment variables > `~/.dsh-pupil.json` > Windows user registry > preset > built-in default**.
 
 | Variable | Purpose | Example (default) |
 |---|---|---|
@@ -63,7 +63,7 @@ Priority: **plugin config > environment variables > `~/.dsh-eye.json` > Windows 
 Fine-grained control via the profile's `cordis.patch.yml`:
 
 ```yaml
-- id: dsh-eye
+- id: dsh-pupil
   config:
     preset: glm
     apiKey: !!js process.env.DASHEYE_API_KEY
@@ -109,7 +109,7 @@ Model request layer (llm/stream waterfall)
 - **The model says it cannot see a pasted image?** This version pre-describes image turns automatically; if that failed (e.g. no key), the model receives an attachment marker with `id=` and should call `vision_describe(attachmentIds=["sha256:..."])`. If it doesn't, check your key config (`setup.ps1`).
 - **No vision key configured?** No lockup: image turns degrade to marker + tool call, and the tool tells you to configure a key.
 - **An old session is already stuck ("running" forever)?** Click the **Stop** button next to the input; if it keeps retrying, **open a new conversation** (leave the old one idle).
-- **Config changes not taking effect?** `~/.dsh-eye.json` / env changes apply immediately; `cordis.patch.yml` changes need a restart.
+- **Config changes not taking effect?** `~/.dsh-pupil.json` / env changes apply immediately; `cordis.patch.yml` changes need a restart.
 
 ## 🧪 Development & tests
 

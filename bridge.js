@@ -1,4 +1,4 @@
-// dsh-eye · 图片桥接（bridge）
+// dsh-pupil · 图片桥接（bridge）
 //
 // 把发往模型的消息中的图片块替换为文本，让纯文本模型（DeepSeek 等）永不收到
 // 图片内容（adapter 会直接拒绝 image 块并导致会话失败循环）。

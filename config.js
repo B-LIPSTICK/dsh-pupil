@@ -1,7 +1,7 @@
-// dsh-eye · 配置解析
-// 优先级：插件配置（cordis.patch.yml / 设置页）> 环境变量 > ~/.dsh-eye.json
+// dsh-pupil · 配置解析
+// 优先级：插件配置（cordis.patch.yml / 设置页）> 环境变量 > ~/.dsh-pupil.json
 //         > Windows 用户注册表 > 预设 > 内置默认。
-// 兼容 dsh-eye 技能脚本的配置文件：插件与脚本共用同一份用户配置。
+// 兼容 dsh-pupil 技能脚本的配置文件：插件与脚本共用同一份用户配置。
 import z from "@deepseek-ai/schemastery";
 import { homedir } from "node:os";
 import { join } from "node:path";
@@ -61,7 +61,7 @@ export const DEFAULT_IMAGE_MARKER =
 // ---------- 用户级配置读取（Windows：文件 + 注册表；其他平台：仅文件）----------
 
 function userConfigFilePath() {
-  return join(homedir(), ".dsh-eye.json");
+  return join(homedir(), ".dsh-pupil.json");
 }
 
 export function readUserConfigFile() {
@@ -84,7 +84,7 @@ function queryRegistryText() {
     /* 受限环境走方式 2 */
   }
   try {
-    const tmp = join(tmpdir(), `dsh-eye-reg-${process.pid}.txt`);
+    const tmp = join(tmpdir(), `dsh-pupil-reg-${process.pid}.txt`);
     const r = spawnSync("cmd.exe", ["/d", "/s", "/c", `reg query HKCU\\Environment > "${tmp}" 2>&1`], {
       stdio: "ignore",
       windowsHide: true,
@@ -101,7 +101,7 @@ function queryRegistryText() {
 }
 
 let userEnvCache;
-/** 用户级环境（~/.dsh-eye.json 优先，其次 Windows 用户注册表）。 */
+/** 用户级环境（~/.dsh-pupil.json 优先，其次 Windows 用户注册表）。 */
 export function userEnv() {
   if (userEnvCache !== undefined) return userEnvCache;
   userEnvCache = {};

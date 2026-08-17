@@ -1,4 +1,4 @@
-// dsh-eye v0.3 · DeepSeek Harness 视觉插件
+// dsh-pupil v0.3 · DeepSeek Harness 视觉插件
 //
 // 核心能力：用户把图片粘贴/上传进对话，会话界面照常显示图片，而模型输入层
 // 的图片块会被同步替换为文本（记忆描述或附件标记），纯文本模型（DeepSeek）
@@ -24,7 +24,7 @@ import {
   attachmentIdOf,
 } from "./bridge.js";
 
-export const name = "dsh-eye";
+export const name = "dsh-pupil";
 export const inject = ["tools", "systemPrompt", "llm", "attachments"];
 
 function shortName(source) {
@@ -170,7 +170,7 @@ export function apply(ctx, config = {}) {
         }
       } catch (error) {
         // 预识别失败静默：llm/stream 会用附件标记兜底，模型可调用工具看图
-        ctx.logger?.warn?.(`dsh-eye: image-turn pre-describe skipped: ${error?.message ?? error}`);
+        ctx.logger?.warn?.(`dsh-pupil: image-turn pre-describe skipped: ${error?.message ?? error}`);
       }
       return decision;
     });
@@ -178,7 +178,7 @@ export function apply(ctx, config = {}) {
 
   // ---------- 4. 系统提示 ----------
   ctx.systemPrompt.section({
-    name: "dsh-eye",
+    name: "dsh-pupil",
     order: 150,
     text: () => systemPromptSection(),
   });
@@ -417,7 +417,7 @@ export function apply(ctx, config = {}) {
             ref = await attachments.saveImage({
               data: img.bytes,
               mediaType: img.mediaType,
-              name: `dsh-eye-${Date.now()}`,
+              name: `dsh-pupil-${Date.now()}`,
             });
           } catch {
             /* 附件服务失败 → 仅落盘 */

@@ -1,9 +1,9 @@
-// dsh-eye · 画图：文字 → 图片（OpenAI 兼容 /images/generations）
+// dsh-pupil · 画图：文字 → 图片（OpenAI 兼容 /images/generations）
 import { mkdir, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { tmpdir } from "node:os";
 
-const NAME = "dsh-eye";
+const NAME = "dsh-pupil";
 
 /** 根据魔数识别图片格式（不依赖扩展名）。 */
 export function sniffMediaType(bytes) {
@@ -27,7 +27,7 @@ export function sniffMediaType(bytes) {
 export async function generateImage(config, prompt, size, signal) {
   if (!config.genApiKey) {
     throw new Error(
-      `${NAME}: 未配置画图 API Key。已检查：插件配置、环境变量、~/.dsh-eye.json、用户注册表，均未找到。` +
+      `${NAME}: 未配置画图 API Key。已检查：插件配置、环境变量、~/.dsh-pupil.json、用户注册表，均未找到。` +
         `请运行 install.cmd（或 setup.ps1）完成配置后重试。`
     );
   }
@@ -72,17 +72,17 @@ export async function generateImage(config, prompt, size, signal) {
   return { bytes, ext, mediaType };
 }
 
-/** 默认输出目录：%DSH_HOME%/storages/dsh-eye 或系统临时目录。 */
+/** 默认输出目录：%DSH_HOME%/storages/dsh-pupil 或系统临时目录。 */
 export function defaultOutDir() {
-  if (process.env.DSH_HOME) return join(process.env.DSH_HOME, "storages", "dsh-eye");
-  return join(tmpdir(), "dsh-eye");
+  if (process.env.DSH_HOME) return join(process.env.DSH_HOME, "storages", "dsh-pupil");
+  return join(tmpdir(), "dsh-pupil");
 }
 
 /** 保存图片到磁盘，返回文件路径。 */
 export async function saveImageToDisk(bytes, ext, outDir) {
   const dir = resolve(outDir || defaultOutDir());
   await mkdir(dir, { recursive: true });
-  const file = join(dir, `dsh-eye-${Date.now()}.${ext}`);
+  const file = join(dir, `dsh-pupil-${Date.now()}.${ext}`);
   await writeFile(file, bytes);
   return file;
 }

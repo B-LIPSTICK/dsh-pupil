@@ -1,11 +1,11 @@
-﻿# dsh-eye · 配置向导（可独立运行；install.ps1 安装完成后会自动调用）
+﻿# dsh-pupil · 配置向导（可独立运行；install.ps1 安装完成后会自动调用）
 [CmdletBinding()]
 param(
   [switch]$DryRun          # 只预览，不写入
 )
 
 $ErrorActionPreference = "Stop"
-$configPath = Join-Path $HOME ".dsh-eye.json"
+$configPath = Join-Path $HOME ".dsh-pupil.json"
 
 function Write-Step([string]$msg) { Write-Host "`n==> $msg" -ForegroundColor Cyan }
 function Write-OK([string]$msg)   { Write-Host "   [OK] $msg" -ForegroundColor Green }
@@ -22,7 +22,7 @@ function Read-Key([string]$prompt) {
 
 Write-Host ""
 Write-Host "  ============================================" -ForegroundColor Cyan
-Write-Host "   dsh-eye 配置向导" -ForegroundColor Cyan
+Write-Host "   dsh-pupil 配置向导" -ForegroundColor Cyan
 Write-Host "  ============================================" -ForegroundColor Cyan
 Write-Host "   看图（vision）：描述 / 问答 / OCR + 粘贴图片自动识别" -ForegroundColor DarkGray
 Write-Host "   画图（generate）：文字生成图片" -ForegroundColor DarkGray
@@ -113,7 +113,7 @@ if ($DryRun) {
 $json = $existing | ConvertTo-Json
 # 必须无 BOM 写入（带 BOM 的 JSON 会被脚本/工具 JSON.parse 拒绝）
 [System.IO.File]::WriteAllText($configPath, $json, (New-Object System.Text.UTF8Encoding($false)))
-Write-OK "配置已保存（插件与 dsh-eye 技能共用）"
+Write-OK "配置已保存（插件与 dsh-pupil 技能共用）"
 
 Write-Host ""
 Write-Host "  ============================================" -ForegroundColor Green

@@ -1,4 +1,4 @@
-// dsh-eye · 浏览器端（client half）
+// dsh-pupil · 浏览器端（client half）
 //
 // 平台限制：DSH GUI 的工具结果卡默认不渲染图片块。本模块为 image_generate
 // 注册一个工具卡渲染器：结果里含图片附件时，直接在对话内嵌显示生成图
@@ -8,7 +8,7 @@
 // block.content 提取 image 块 → ctx.sessions.binding(sessionId).session
 // .readAttachment 拉取字节 → Blob URL 交给 ImageGallery。
 window.__ModuleLoader__.load({
-  id: 'dsh-eye',
+  id: 'dsh-pupil',
   factory: (require) => {
     const module = { exports: {} }
     const exports = module.exports
@@ -43,11 +43,11 @@ window.__ModuleLoader__.load({
     /** 通过会话绑定拉取附件字节并生成 Blob URL。 */
     function loadGeneratedImage(ctx, sessionId, attachment) {
       const binding = ctx.sessions.binding(sessionId)
-      if (binding === undefined) return Promise.reject(new Error(`dsh-eye: unknown session ${String(sessionId)}`))
+      if (binding === undefined) return Promise.reject(new Error(`dsh-pupil: unknown session ${String(sessionId)}`))
       return (async () => {
         const result = await binding.session.readAttachment(attachment.attachmentId)
         if (!result.ok) {
-          throw new Error(`dsh-eye: ${result.error.code}: ${result.error.message}`)
+          throw new Error(`dsh-pupil: ${result.error.code}: ${result.error.message}`)
         }
         const ref = result.value.attachment
         const data = result.value.data
@@ -107,7 +107,7 @@ window.__ModuleLoader__.load({
           for (const url of generatedImageUrls) URL.revokeObjectURL(url)
           generatedImageUrls.clear()
         },
-        'dsh-eye: generated image URL cache',
+        'dsh-pupil: generated image URL cache',
       )
     }
 

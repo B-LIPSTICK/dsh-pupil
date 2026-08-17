@@ -1,4 +1,4 @@
-﻿# dsh-eye · 一键安装（PowerShell 版）
+﻿# dsh-pupil · 一键安装（PowerShell 版）
 # 用法：  .\install.ps1            # 安装到 web profile（默认）
 #         .\install.ps1 -Profile desktop
 #         .\install.ps1 -SkipSetup # 跳过配置向导
@@ -18,7 +18,7 @@ function Write-Err([string]$msg)  { Write-Host "   [x] $msg" -ForegroundColor Re
 
 Write-Host ""
 Write-Host "  ============================================" -ForegroundColor Cyan
-Write-Host "   dsh-eye 一键安装（profile: $Profile）" -ForegroundColor Cyan
+Write-Host "   dsh-pupil 一键安装（profile: $Profile）" -ForegroundColor Cyan
 Write-Host "  ============================================" -ForegroundColor Cyan
 
 # 1. 检查环境
