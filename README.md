@@ -56,11 +56,23 @@
 
 ## 快速开始（3 步，1 分钟）
 
-```sh
+**PowerShell**
+
+```powershell
 git clone git@github.com:B-LIPSTICK/dsh-pupil.git
 cd dsh-pupil
-install.cmd        # Windows：双击或运行，一键安装
+.\install.cmd
 ```
+
+**cmd（或直接双击 `install.cmd`）**
+
+```cmd
+git clone git@github.com:B-LIPSTICK/dsh-pupil.git
+cd dsh-pupil
+install.cmd
+```
+
+> ⚠️ 两个终端命令**不一致**：PowerShell 需要 `.\` 前缀，cmd 不需要。不想记？直接**双击** `install.cmd`。
 
 | 步骤 | 做什么 | 你要做的 |
 |---|---|---|

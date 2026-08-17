@@ -39,11 +39,23 @@ skill for lightweight scripts. They share config and can coexist.
 
 ## Quick start (3 steps, 1 minute)
 
-```sh
+**PowerShell**
+
+```powershell
 git clone git@github.com:B-LIPSTICK/dsh-pupil.git
 cd dsh-pupil
-install.cmd        # Windows: double-click or run — one-command install
+.\install.cmd
 ```
+
+**cmd (or just double-click `install.cmd`)**
+
+```cmd
+git clone git@github.com:B-LIPSTICK/dsh-pupil.git
+cd dsh-pupil
+install.cmd
+```
+
+> ⚠️ The two shells differ: PowerShell needs the `.\` prefix, cmd does not. Can't remember? Just **double-click** `install.cmd`.
 
 | Step | What happens | What you do |
 |---|---|---|
