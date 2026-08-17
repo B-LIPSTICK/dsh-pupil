@@ -1,4 +1,4 @@
-# dsh-pupil · 一键安装（PowerShell 版）
+﻿# dsh-pupil · 一键安装（PowerShell 版）
 # 用法：  .\install.ps1            # 安装到 web profile（默认）
 #         .\install.ps1 -Profile desktop
 #         .\install.ps1 -SkipSetup # 跳过配置向导
