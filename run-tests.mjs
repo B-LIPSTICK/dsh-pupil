@@ -181,6 +181,24 @@ function Config_standardValidate(config) {
 // ---------- 测试 ----------
 const server = await createMockServer();
 
+console.log("\n== 0. 包完整性：package.json 无 BOM（dsh web 启动依赖）==");
+{
+  const { readFileSync } = await import("node:fs");
+  const { dirname, join } = await import("node:path");
+  const { fileURLToPath } = await import("node:url");
+  const pkgPath = join(dirname(fileURLToPath(import.meta.url)), "..", "package.json");
+  const bytes = readFileSync(pkgPath);
+  const hasBom = bytes.length >= 3 && bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf;
+  check("package.json 无 UTF-8 BOM", !hasBom, "BOM 会导致 dsh web 启动失败（JSON.parse 拒绝）");
+  let parseOk = true;
+  try {
+    JSON.parse(bytes.toString("utf8"));
+  } catch {
+    parseOk = false;
+  }
+  check("package.json 可解析", parseOk);
+}
+
 console.log("\n== 1. 图片轮：不透传 + 标记替换 ==");
 {
   const { ctx, llm, attachments } = boot({});

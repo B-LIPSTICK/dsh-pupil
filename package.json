@@ -1,4 +1,4 @@
-﻿{
+{
   "name": "dsh-pupil",
   "version": "0.3.2",
   "description": "DeepSeek Harness vision & image-generation plugin: paste images into any chat 鈥?the conversation keeps showing the image, the model sees a description, and nothing ever gets stuck. Zero-dependency, zero-build, one-command install.",

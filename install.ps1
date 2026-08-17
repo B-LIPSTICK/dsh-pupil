@@ -1,4 +1,4 @@
-# dsh-pupil · 一键安装（PowerShell 版）
+﻿# dsh-pupil · 一键安装（PowerShell 版）
 # 用法：  .\install.ps1            # 安装到 web profile（默认）
 #         .\install.ps1 -Profile desktop
 #         .\install.ps1 -SkipSetup # 跳过配置向导
@@ -32,6 +32,18 @@ if ($DryRun) { Write-Host "[DryRun] 环境检查通过，停止。"; return }
 
 # 2. 打包插件（本地 npm pack，无需发布）
 Write-Host "`n[1/3] 打包插件..."
+
+# BOM 防护：package.json 若带 UTF-8 BOM，JSON.parse 会拒绝、dsh web 直接起不来。
+# PowerShell 5.1 的 Set-Content -Encoding UTF8 会写 BOM，这里打包前强制剥离。
+$pkgJson = Join-Path $here "package.json"
+if (Test-Path $pkgJson) {
+  $pkgBytes = [System.IO.File]::ReadAllBytes($pkgJson)
+  if ($pkgBytes.Length -ge 3 -and $pkgBytes[0] -eq 0xEF -and $pkgBytes[1] -eq 0xBB -and $pkgBytes[2] -eq 0xBF) {
+    [System.IO.File]::WriteAllBytes($pkgJson, $pkgBytes[3..($pkgBytes.Length - 1)])
+    Write-Host "⚠️ 检测到 package.json 带 UTF-8 BOM，已自动剥离（避免 dsh web 启动失败）。"
+  }
+}
+
 $tgz = & npm pack "$here" --pack-destination "$here" 2>&1 | Select-Object -Last 1
 if (-not $tgz -or -not (Test-Path (Join-Path $here $tgz))) {
   Write-Host "❌ npm pack 失败：$tgz"
