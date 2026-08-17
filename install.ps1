@@ -50,7 +50,9 @@ if (Test-Path $pkgJson) {
   }
 }
 
-$packOut = & npm pack "$here" --pack-destination "$here" 2>$null
+# PS 5.1 + EAP=Stop 下原生命令的 stderr 会直接抛 NativeCommandError（2>$null/2>&1 都压不住），
+# 因此 npm 的 notice 输出必须在 cmd 内部重定向到 nul，让 PowerShell 根本收不到 stderr。
+$packOut = & cmd /c "npm pack `"$here`" --pack-destination `"$here`" 2>nul"
 $tgz = $packOut | Where-Object { $_ -match '\.tgz$' } | Select-Object -Last 1
 if (-not $tgz -or -not (Test-Path (Join-Path $here $tgz))) {
   Write-Err "npm pack 失败：$tgz"
@@ -61,7 +63,10 @@ Write-OK "打包完成：$tgz"
 
 # 3. 安装到 profile
 Write-Step "[2/3] 安装到 profile '$Profile'"
+# dsh 正常输出走 stdout（无 stderr），但保险起见在调用期间放开 EAP，防止任何 stderr 触发 NativeCommandError
+$ErrorActionPreference = "Continue"
 & dsh plugin --profile $Profile add $tgzPath
+$ErrorActionPreference = "Stop"
 if ($LASTEXITCODE -ne 0) {
   Write-Err "dsh plugin add 失败（退出码 $LASTEXITCODE）。"
   Write-Host "   可尝试手动执行：dsh plugin --profile $Profile add $tgzPath"
