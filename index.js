@@ -405,7 +405,11 @@ export function apply(ctx, config = {}) {
       },
       async execute(args, exec) {
         const img = await generateImage(cfg, String(args.prompt ?? ""), args.size, exec.signal);
-        // 1) 发布为会话附件（模型侧可见；GUI 工具卡暂不渲染图片块，保留供未来兼容）
+        // 1) 发布为会话附件（模型侧可见）
+        //    GUI 内嵌显示由客户端插件承担（lib/client.js：tool.call.toolview 的
+        //    image_generate 渲染卡 + ImageGallery），不要在这里注入会话消息——
+        //    注入会插在 tool/call 与 tool/result 之间，破坏"带 tool_calls 的
+        //    assistant 消息后必须紧跟 tool 消息"的序列校验，导致整轮失败。
         let ref;
         const attachments = attachmentsService();
         if (attachments && typeof attachments.saveImage === "function") {
@@ -419,34 +423,7 @@ export function apply(ctx, config = {}) {
             /* 附件服务失败 → 仅落盘 */
           }
         }
-        // 2) 把生成图注入为一条 assistant 图片消息 —— GUI 的助手消息会渲染图片
-        //    （工具结果卡不渲染图片块是平台限制，这条消息让用户在对话里直接看到图）
-        if (ref) {
-          const agent = exec.agent;
-          const session = agent?.session;
-          if (session && typeof session.append === "function") {
-            try {
-              const phase = agent.phase;
-              session.append(
-                "assistant/message",
-                {
-                  turn: phase?.turn ?? 0,
-                  step: phase?.step ?? 0,
-                  message: {
-                    role: "assistant",
-                    id: `dsh-pupil-image-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-                    content: [{ type: "image", attachment: ref }],
-                    source: { kind: "model", provider: "dsh-pupil", model: "image_generate" },
-                  },
-                },
-                { surfaceOp: "append", sourceEventSeqs: [] }
-              );
-            } catch (error) {
-              ctx.logger?.warn?.(`dsh-pupil: image display injection skipped: ${error?.message ?? error}`);
-            }
-          }
-        }
-        // 3) 同时落盘一份，返回真实文件路径（用户可直接打开）
+        // 2) 同时落盘一份，返回真实文件路径（用户可直接打开）
         let file;
         try {
           file = await saveImageToDisk(img.bytes, img.ext);

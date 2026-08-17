@@ -301,37 +301,22 @@ console.log("\n== 5. vision_describe 工具：按 attachmentIds 看图 ==");
 
 console.log("\n== 6. image_generate 画图 ==");
 {
-  const { ctx, llm, toolDefs } = boot({
+  const { toolDefs } = boot({
     config: { apiKey: "k", baseUrl: server.baseUrl, model: "mock-vision", genApiKey: "k", genBaseUrl: server.baseUrl, genModel: "mock-gen" },
   });
   const tool = toolDefs.find((t) => t.name === "image_generate");
   check("工具已注册", Boolean(tool), "image_generate 未注册");
   if (tool) {
-    // 模拟真实 exec（agent + session），验证图片注入
-    const appended = [];
-    const fakeSession = {
-      append(type, data, opts) {
-        appended.push({ type, data, opts });
-      },
-    };
-    const result = await tool.execute(
-      { prompt: "一只猫" },
-      { signal: new AbortController().signal, agent: { session: fakeSession, phase: { turn: 5, step: 2 } } }
-    );
+    const result = await tool.execute({ prompt: "一只猫" }, { signal: new AbortController().signal });
     check("返回附件引用", Boolean(result?.image?.attachmentId), JSON.stringify(result).slice(0, 120));
-    check("注入 assistant 图片消息", appended.length === 1 && appended[0].type === "assistant/message" && appended[0].data.message.content[0].type === "image", JSON.stringify(appended.map((a) => a.type)));
-    check("注入消息字段合法", appended[0]?.data?.message?.source?.kind === "model" && typeof appended[0]?.data?.message?.id === "string" && appended[0]?.data?.message?.id !== "", JSON.stringify(appended[0]?.data?.message ?? null).slice(0, 160));
-    // 注入的 assistant 图片消息进入后续请求时被替换为标记（不污染模型）
-    if (appended.length === 1) {
-      const signal = new AbortController().signal;
-      const preparedCall = await llm.prepareCall({ provider: "deepseek-mock", model: "deepseek-mock" }, signal);
-      const history = [appended[0].data.message];
-      const chunks = await consume(preparedCall.stream({ provider: "deepseek-mock", model: "deepseek-mock", messages: history, signal }));
-      const text = chunks.map((c) => c.text ?? "").join("");
-      const finish = chunks.find((c) => c.type === "finish");
-      check("后续请求中图片被替换（无 UNSUPPORTED_CONTENT）", finish?.reason?.kind !== "error" || finish?.reason?.failure?.code !== "UNSUPPORTED_CONTENT", JSON.stringify(finish?.reason));
-      check("模型看到图片标记", text.includes("图片附件") || text.includes("dsh-pupil"), text.slice(0, 120));
-    }
+    check("返回落盘路径", Boolean(result?.path), JSON.stringify(result).slice(0, 160));
+    // 工具执行不注入任何会话消息（注入会破坏 tool_calls 序列校验）
+    const spy = [];
+    await tool.execute(
+      { prompt: "一只猫" },
+      { signal: new AbortController().signal, agent: { session: { append: (...args) => spy.push(args) }, phase: { turn: 5, step: 2 } } }
+    );
+    check("不注入会话消息", spy.length === 0, `appended=${spy.length}`);
   }
 }
 
