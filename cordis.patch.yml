@@ -1,0 +1,13 @@
+# dsh-pupil bundle patch — registers the plugin into the DSH composition.
+#
+# Installed as a bundle via: dsh plugin --profile <profile> add <this package>
+# User configuration goes into the profile's cordis.patch.yml by id:
+#   - id: dsh-pupil
+#     config:
+#       preset: glm                # 看图后端（openai | glm | qwen | ollama）
+#       apiKey: !!js process.env.DASHEYE_API_KEY
+#       genPreset: qwen            # 画图后端（独立配置）
+#       genApiKey: !!js process.env.DASHEYE_GEN_API_KEY
+- insert:
+    - id: dsh-pupil
+      name: 'dsh-pupil'
