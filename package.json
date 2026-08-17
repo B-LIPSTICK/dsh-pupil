@@ -1,13 +1,14 @@
 {
   "name": "dsh-pupil",
-  "version": "0.3.4",
-  "description": "DeepSeek Harness vision & image-generation plugin: paste images into any chat 鈥?the conversation keeps showing the image, the model sees a description, and nothing ever gets stuck. Zero-dependency, zero-build, one-command install.",
+  "version": "0.3.5",
+  "description": "DeepSeek Harness vision & image-generation plugin: paste images into any chat — the conversation keeps showing the image, the model sees a description, and nothing ever gets stuck. Zero-dependency, zero-build, one-command install.",
   "type": "module",
   "main": "lib/index.js",
   "exports": {
     ".": {
       "default": "./lib/index.js"
     },
+    "./client": "./lib/client.js",
     "./cordis.patch.yml": "./cordis.patch.yml",
     "./package.json": "./package.json"
   },
@@ -19,6 +20,14 @@
     "README.en.md"
   ],
   "dsh": {
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-runtime",
+        "@deepseek-ai/dsh-client-connection",
+        "@deepseek-ai/dsh-client-ui-attachment"
+      ]
+    },
     "bundle": {
       "patch": "./cordis.patch.yml"
     }
@@ -48,4 +57,3 @@
     "node": ">=22.0.0"
   }
 }
-
