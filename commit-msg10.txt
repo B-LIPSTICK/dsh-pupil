@@ -1,0 +1,1 @@
+fix: 同步根目录修复至 lib（inject attachments/附件索引/画图降级），删除根目录重复副本

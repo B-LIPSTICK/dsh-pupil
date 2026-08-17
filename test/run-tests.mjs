@@ -35,21 +35,53 @@ function makeTools() {
   };
 }
 function makeSystemPrompt() {
+  const sections = [];
   return {
-    section() {},
+    sections,
+    section(sec) {
+      sections.push(sec);
+    },
   };
 }
 function makeAttachments() {
   return {
+    // 模拟真实附件存储：校验引用元数据与文件一致性（缺字段 → ATTACHMENT_CORRUPT）
     async readImage(ref) {
       if (!ref?.attachmentId) throw new Error("no attachmentId");
+      if (
+        typeof ref?.mediaType !== "string" ||
+        typeof ref?.bytes !== "number" ||
+        typeof ref?.width !== "number" ||
+        typeof ref?.height !== "number"
+      ) {
+        throw new Error("Stored attachment metadata does not match its reference.");
+      }
       return {
         data: PNG_1PX,
-        ref: { attachmentId: ref.attachmentId, mediaType: "image/png" },
+        ref: { attachmentId: ref.attachmentId, mediaType: "image/png", bytes: PNG_1PX.length, width: 1, height: 1 },
       };
     },
     async saveImage({ data, mediaType }) {
       return { attachmentId: `sha256:mock-${data.length}`, mediaType, bytes: data.length, width: 1, height: 1 };
+    },
+  };
+}
+
+/** 构造一个带会话事件日志的 agent 载荷（模拟真实 agent-loop 的 pre-step payload）。 */
+function preStepPayload(messages, turn = 1) {
+  return {
+    messages,
+    turn,
+    step: 1,
+    signal: new AbortController().signal,
+    agent: {
+      session: {
+        events: messages.map((m) => ({
+          type: "user/message",
+          seq: 1,
+          data: m,
+        })),
+      },
     },
   };
 }
@@ -121,7 +153,7 @@ function imageMessage(attachmentId = "sha256:deadbeef") {
   ];
 }
 
-function boot({ config = {}, visionContent, failVision } = {}) {
+function boot({ config = {}, visionContent, failVision, withoutAttachments = false } = {}) {
   const ctx = new Context();
   const llm = new LlmRuntime(ctx);
   const dsAdapter = makeDeepSeekLikeAdapter("deepseek-mock");
@@ -129,15 +161,15 @@ function boot({ config = {}, visionContent, failVision } = {}) {
   const tools = makeTools();
   const sp = makeSystemPrompt();
   const attachments = makeAttachments();
-  ctx.tools = tools;
-  ctx.systemPrompt = sp;
-  ctx.attachments = attachments;
-  ctx.llm = llm;
+  // 用 cordis 真实服务注册（与 DSH 一致），而不是直接赋值属性
+  ctx.provide("tools", tools);
+  ctx.provide("systemPrompt", sp);
+  if (!withoutAttachments) ctx.provide("attachments", attachments);
   // 通过 cordis schema 应用默认值
   const result = Config_standardValidate(config);
   apply(ctx, result);
   const toolDefs = tools.list();
-  return { ctx, llm, tools, attachments, toolDefs, dsAdapter };
+  return { ctx, llm, tools, sp, attachments, toolDefs, dsAdapter };
 }
 
 function Config_standardValidate(config) {
@@ -148,6 +180,24 @@ function Config_standardValidate(config) {
 
 // ---------- 测试 ----------
 const server = await createMockServer();
+
+console.log("\n== 0. 包完整性：package.json 无 BOM（dsh web 启动依赖）==");
+{
+  const { readFileSync } = await import("node:fs");
+  const { dirname, join } = await import("node:path");
+  const { fileURLToPath } = await import("node:url");
+  const pkgPath = join(dirname(fileURLToPath(import.meta.url)), "..", "package.json");
+  const bytes = readFileSync(pkgPath);
+  const hasBom = bytes.length >= 3 && bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf;
+  check("package.json 无 UTF-8 BOM", !hasBom, "BOM 会导致 dsh web 启动失败（JSON.parse 拒绝）");
+  let parseOk = true;
+  try {
+    JSON.parse(bytes.toString("utf8"));
+  } catch {
+    parseOk = false;
+  }
+  check("package.json 可解析", parseOk);
+}
 
 console.log("\n== 1. 图片轮：不透传 + 标记替换 ==");
 {
@@ -180,9 +230,9 @@ console.log("\n== 3. instantDescribe：图片轮预识别 ==");
     config: { apiKey: "k", baseUrl: server.baseUrl, model: "mock-vision" },
   });
   const signal = new AbortController().signal;
-  // 模拟 agent-loop：先 pre-step（claimed 消息）再请求
+  // 模拟 agent-loop：先 pre-step（claimed 消息 + agent.session）再请求
   const claimed = imageMessage();
-  await ctx.events.waterfall(null, "agent/pre-step", { messages: claimed, turn: 1, step: 1, signal }, () =>
+  await ctx.events.waterfall(null, "agent/pre-step", preStepPayload(claimed), () =>
     Promise.resolve({ kind: "enter", messages: claimed })
   );
   const preparedCall = await llm.prepareCall({ provider: "deepseek-mock", model: "deepseek-mock" }, signal);
@@ -202,7 +252,7 @@ console.log("\n== 4. 图片记忆：后续轮次历史图片用记忆 ==");
   const id = "sha256:memory1";
   // 第一轮：图片轮（先 pre-step 预识别，再请求，模拟真实 agent-loop）
   const claimed = imageMessage(id);
-  await ctx.events.waterfall(null, "agent/pre-step", { messages: claimed, turn: 1, step: 1, signal }, () =>
+  await ctx.events.waterfall(null, "agent/pre-step", preStepPayload(claimed), () =>
     Promise.resolve({ kind: "enter", messages: claimed })
   );
   const preparedCall1 = await llm.prepareCall({ provider: "deepseek-mock", model: "deepseek-mock" }, signal);
@@ -226,12 +276,26 @@ console.log("\n== 4. 图片记忆：后续轮次历史图片用记忆 ==");
 
 console.log("\n== 5. vision_describe 工具：按 attachmentIds 看图 ==");
 {
-  const { toolDefs } = boot({ config: { apiKey: "k", baseUrl: server.baseUrl, model: "mock-vision" } });
+  const { ctx, toolDefs } = boot({ config: { apiKey: "k", baseUrl: server.baseUrl, model: "mock-vision" } });
   const tool = toolDefs.find((t) => t.name === "vision_describe");
   check("工具已注册", Boolean(tool), "vision_describe 未注册");
   if (tool) {
-    const text = await tool.execute({ attachmentIds: ["sha256:tool1"], question: "图里有什么？" }, { signal: new AbortController().signal });
+    // 先跑 pre-step 建立附件索引（模拟真实 agent-loop）
+    const id = "sha256:tool1";
+    const claimed = imageMessage(id);
+    await ctx.events.waterfall(null, "agent/pre-step", preStepPayload(claimed), () =>
+      Promise.resolve({ kind: "enter", messages: claimed })
+    );
+    const text = await tool.execute({ attachmentIds: [id], question: "图里有什么？" }, { signal: new AbortController().signal });
     check("返回视觉结果", typeof text === "string" && text.includes("MOCK_VISION_OK"), String(text).slice(0, 80));
+    // 未索引的 id → 友好错误
+    let errMsg = "";
+    try {
+      await tool.execute({ attachmentIds: ["sha256:unknown"] }, { signal: new AbortController().signal });
+    } catch (e) {
+      errMsg = e.message;
+    }
+    check("未索引附件友好报错", errMsg.includes("未找到附件"), errMsg.slice(0, 120));
   }
 }
 
@@ -245,20 +309,61 @@ console.log("\n== 6. image_generate 画图 ==");
   if (tool) {
     const result = await tool.execute({ prompt: "一只猫" }, { signal: new AbortController().signal });
     check("返回附件引用", Boolean(result?.image?.attachmentId), JSON.stringify(result).slice(0, 120));
+    check("返回落盘路径", Boolean(result?.path), JSON.stringify(result).slice(0, 160));
+    // 工具执行不注入任何会话消息（注入会破坏 tool_calls 序列校验）
+    const spy = [];
+    await tool.execute(
+      { prompt: "一只猫" },
+      { signal: new AbortController().signal, agent: { session: { append: (...args) => spy.push(args) }, phase: { turn: 5, step: 2 } } }
+    );
+    check("不注入会话消息", spy.length === 0, `appended=${spy.length}`);
   }
 }
 
 console.log("\n== 7. 系统提示段落 ==");
 {
-  const { ctx, tools, attachments } = boot({});
-  const sp = { section(sec) { sections.push(sec); } };
-  const sections = [];
-  ctx.systemPrompt = sp;
-  ctx.tools = tools;
-  ctx.attachments = attachments;
-  apply(ctx, Config_standardValidate({}));
-  const text = sections.map((s) => s.text()).join("\n");
+  const { sp } = boot({});
+  const text = sp.sections.map((s) => s.text()).join("\n");
   check("含图片附件标记说明", text.includes("attachmentIds"), text.slice(0, 80));
+}
+
+console.log("\n== 8. 附件服务缺失：不炸、不透传、工具友好报错 ==");
+{
+  const { ctx, llm, toolDefs } = boot({
+    withoutAttachments: true,
+    config: { apiKey: "k", baseUrl: server.baseUrl, model: "mock-vision" },
+  });
+  const signal = new AbortController().signal;
+  // pre-step：instantDescribe 应静默跳过（服务缺失不抛），索引仍建立
+  let preStepOk = true;
+  try {
+    await ctx.events.waterfall(
+      null,
+      "agent/pre-step",
+      preStepPayload(imageMessage()),
+      () => Promise.resolve({ kind: "enter", messages: imageMessage() })
+    );
+  } catch (e) {
+    preStepOk = false;
+  }
+  check("pre-step 不炸（附件缺失静默降级）", preStepOk);
+  // llm/stream 仍同步替换
+  const preparedCall = await llm.prepareCall({ provider: "deepseek-mock", model: "deepseek-mock" }, signal);
+  const chunks = await consume(preparedCall.stream({ provider: "deepseek-mock", model: "deepseek-mock", messages: imageMessage(), signal }));
+  const finish = chunks.find((c) => c.type === "finish");
+  const text = chunks.map((c) => c.text ?? "").join("");
+  check("不透传", finish?.reason?.kind !== "error" || finish?.reason?.failure?.code !== "UNSUPPORTED_CONTENT", JSON.stringify(finish?.reason));
+  check("标记替换仍生效", text.includes("图片附件"), text.slice(0, 100));
+  // 工具带 attachmentIds（已索引，但无附件服务）→ 友好报错而不是崩溃
+  const tool = toolDefs.find((t) => t.name === "vision_describe");
+  let errMsg = "";
+  try {
+    await tool.execute({ attachmentIds: ["sha256:deadbeef"] }, { signal });
+  } catch (e) {
+    errMsg = e.message;
+  }
+  check("无附件服务时工具友好报错", errMsg.includes("附件服务不可用"), errMsg.slice(0, 120));
+  await ctx.fiber.dispose?.().catch?.(() => {});
 }
 
 await server.close();

@@ -208,7 +208,7 @@ dsh-pupil/
 ## Roadmap
 
 - [ ] Logo & brand visuals (once a generation API key is configured)
-- [x] npm release (npm latest: 0.4.1)
+- [x] npm release (npm latest: 0.4.2)
 - [ ] More vision backend presets (Gemini, local vLLM)
 - [ ] Local OCR (tesseract) first
 - [ ] Image downscaling (auto-compress large images to save tokens)
