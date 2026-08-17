@@ -1,4 +1,4 @@
-﻿# dsh-pupil · 一键安装（PowerShell 版）
+# dsh-pupil · 一键安装（PowerShell 版）
 # 用法：  .\install.ps1            # 安装到 web profile（默认）
 #         .\install.ps1 -Profile desktop
 #         .\install.ps1 -SkipSetup # 跳过配置向导
@@ -50,7 +50,8 @@ if (Test-Path $pkgJson) {
   }
 }
 
-$tgz = & npm pack "$here" --pack-destination "$here" 2>&1 | Select-Object -Last 1
+$packOut = & npm pack "$here" --pack-destination "$here" 2>$null
+$tgz = $packOut | Where-Object { $_ -match '\.tgz$' } | Select-Object -Last 1
 if (-not $tgz -or -not (Test-Path (Join-Path $here $tgz))) {
   Write-Err "npm pack 失败：$tgz"
   exit 1
